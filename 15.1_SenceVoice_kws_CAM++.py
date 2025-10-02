@@ -22,6 +22,8 @@ from langdetect import detect
 import re
 from pypinyin import pinyin, Style
 from modelscope.pipelines import pipeline
+# 需提前安装: pip install modelscope
+from modelscope import snapshot_download
 
 # --- 配置huggingFace国内镜像 ---
 import os
@@ -289,11 +291,13 @@ def is_folder_empty(folder_path):
 
 
 # -------- SenceVoice 语音识别 --模型加载-----
-model_dir = r"E:\2_PYTHON\Project\GPT\QWen\pretrained_models\SenseVoiceSmall"
+# model_dir = r"E:\2_PYTHON\Project\GPT\QWen\pretrained_models\SenseVoiceSmall"  # Windows路径,Linux环境无效
+model_dir = "iic/SenseVoiceSmall"  # ModelScope自动下载
 model_senceVoice = AutoModel( model=model_dir, trust_remote_code=True, )
 
 # -------- CAM++声纹识别 -- 模型加载 --------
-set_SV_enroll = r'.\SpeakerVerification_DIR\enroll_wav\\'
+set_SV_enroll = './SpeakerVerification_DIR/enroll_wav/'  # 使用Linux风格路径
+# CAM++ 使用 ModelScope pipeline 会自动下载模型
 sv_pipeline = pipeline(
     task='speaker-verification',
     model='damo/speech_campplus_sv_zh-cn_16k-common',
@@ -301,15 +305,19 @@ sv_pipeline = pipeline(
 )
 
 # --------- QWen2.5大语言模型 ---------------
-# model_name = r"E:\2_PYTHON\Project\GPT\QWen\Qwen2.5-0.5B-Instruct"
-model_name = r"E:\2_PYTHON\Project\GPT\QWen\Qwen2.5-1.5B-Instruct"
+# model_name = r"E:\2_PYTHON\Project\GPT\QWen\Qwen2.5-0.5B-Instruct"  # Windows路径,Linux环境无效
+# model_name = r"E:\2_PYTHON\Project\GPT\QWen\Qwen2.5-1.5B-Instruct"  # Windows路径,Linux环境无效
 # model_name = r'E:\2_PYTHON\Project\GPT\QWen\Qwen2.5-7B-Instruct-GPTQ-Int4'
+# 使用 ModelScope 下载 Qwen 模型
+model_id = "qwen/Qwen2.5-1.5B-Instruct"
+qwen_local_dir = snapshot_download(model_id=model_id)
 model = AutoModelForCausalLM.from_pretrained(
-    model_name,
+    qwen_local_dir,
     torch_dtype="auto",
-    device_map="auto"
+    device_map="auto",
+    trust_remote_code=True
 )
-tokenizer = AutoTokenizer.from_pretrained(model_name)
+tokenizer = AutoTokenizer.from_pretrained(qwen_local_dir, trust_remote_code=True)
 # ---------- 模型加载结束 -----------------------
 
 class ChatMemory:

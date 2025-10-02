@@ -9,7 +9,7 @@ import webrtcvad
 import os
 import threading
 from transformers import Qwen2VLForConditionalGeneration, AutoTokenizer, AutoProcessor
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoModelForCausalLM
 from qwen_vl_utils import process_vision_info
 import torch
 from funasr import AutoModel
@@ -19,6 +19,8 @@ import asyncio
 from time import sleep
 import langid
 from langdetect import detect
+# 需提前 `pip install modelscope` 并配置好 ModelScope 账号/镜像
+from modelscope import snapshot_download
 
 # --- 配置huggingFace国内镜像 ---
 import os
@@ -212,19 +214,22 @@ async def amain(TEXT, VOICE, OUTPUT_FILE) -> None:
 
 
 # -------- SenceVoice 语音识别 --模型加载-----
-model_dir = r"E:\2_PYTHON\Project\GPT\QWen\pretrained_models\SenseVoiceSmall"
+model_dir = r"iic/SenseVoiceSmall"
 model_senceVoice = AutoModel( model=model_dir, trust_remote_code=True, )
 
 # --- QWen2.5大语言模型 ---
-# model_name = r"E:\2_PYTHON\Project\GPT\QWen\Qwen2.5-0.5B-Instruct"
-model_name = r"E:\2_PYTHON\Project\GPT\QWen\Qwen2.5-1.5B-Instruct"
-# model_name = r'E:\2_PYTHON\Project\GPT\QWen\Qwen2.5-7B-Instruct-GPTQ-Int4'
+# model_name = r"E:\\2_PYTHON\\Project\\GPT\\QWen\\Qwen2.5-0.5B-Instruct"
+model_id = "qwen/Qwen2.5-1.5B-Instruct"
+# 使用 ModelScope 下载模型快照
+qwen_local_dir = snapshot_download(model_id=model_id)
+# model_name = r'E:\\2_PYTHON\\Project\\GPT\\QWen\\Qwen2.5-7B-Instruct-GPTQ-Int4'
 model = AutoModelForCausalLM.from_pretrained(
-    model_name,
+    qwen_local_dir,
     torch_dtype="auto",
-    device_map="auto"
+    device_map="auto",
+    trust_remote_code=True
 )
-tokenizer = AutoTokenizer.from_pretrained(model_name)
+tokenizer = AutoTokenizer.from_pretrained(qwen_local_dir, trust_remote_code=True)
 
 def Inference(TEMP_AUDIO_FILE=f"{OUTPUT_DIR}/audio_0.wav"):
 
@@ -292,6 +297,8 @@ def Inference(TEMP_AUDIO_FILE=f"{OUTPUT_DIR}/audio_0.wav"):
 
 # 主函数
 if __name__ == "__main__":
+    # print(model_senceVoice.model.model_dir)  # FunASR 模型目录
+    # print(model.config._name_or_path)        # Transformers 模型名称/目录
 
     try:
         # 启动音视频录制线程

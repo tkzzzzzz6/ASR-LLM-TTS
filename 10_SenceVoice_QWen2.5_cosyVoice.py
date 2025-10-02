@@ -2,6 +2,8 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 from cosyvoice.cli.cosyvoice import CosyVoice
 from cosyvoice.utils.file_utils import load_wav
 from funasr import AutoModel
+# 需提前安装: pip install modelscope
+from modelscope import snapshot_download
 import torchaudio
 import pygame
 import time
@@ -80,22 +82,31 @@ def clear_folder(folder_path):
 
 # ------------------- 模型初始化 ---------------
 # --- SenceVoice-语音识别模型
-model_dir = r"E:\2_PYTHON\Project\GPT\QWen\pretrained_models\SenseVoiceSmall"
+# model_dir = r"E:\2_PYTHON\Project\GPT\QWen\pretrained_models\SenseVoiceSmall"  # Windows路径，Linux环境无效
+model_dir = "iic/SenseVoiceSmall"  # ModelScope自动下载
 model_senceVoice = AutoModel( model=model_dir, trust_remote_code=True, )
 
 # --- QWen2.5大语言模型 ---
-# model_name = r":\2_PYTHON\Project\GPT\QWen\Qwen2.5-0.5B-Instruct"
-model_name = r"E:\2_PYTHON\Project\GPT\QWen\Qwen2.5-1.5B-Instruct"
-# model_name = r':\2_PYTHON\Project\GPT\QWen\Qwen2.5-7B-Instruct-GPTQ-Int4'
+# model_name = r"E:\2_PYTHON\Project\GPT\QWen\Qwen2.5-0.5B-Instruct"  # Windows路径,Linux环境无效
+# model_name = "Qwen/Qwen2.5-1.5B-Instruct"  # HuggingFace自动下载（需配置镜像或代理）
+# model_name = r'E:\2_PYTHON\Project\GPT\QWen\Qwen2.5-7B-Instruct-GPTQ-Int4'
+# 使用 ModelScope 下载 Qwen 模型
+model_id = "qwen/Qwen2.5-1.5B-Instruct"
+qwen_local_dir = snapshot_download(model_id=model_id)
 model = AutoModelForCausalLM.from_pretrained(
-    model_name,
+    qwen_local_dir,
     torch_dtype="auto",
-    device_map="auto"
+    device_map="auto",
+    trust_remote_code=True
 )
-tokenizer = AutoTokenizer.from_pretrained(model_name)
+tokenizer = AutoTokenizer.from_pretrained(qwen_local_dir, trust_remote_code=True)
 
 # --- CosyVoice - 语音合成模型
-cosyvoice = CosyVoice(r'E:\2_PYTHON\Project\GPT\QWen\pretrained_models\CosyVoice-300M', load_jit=True, load_onnx=False, fp16=True)
+# cosyvoice = CosyVoice(r'E:\2_PYTHON\Project\GPT\QWen\pretrained_models\CosyVoice-300M', load_jit=True, load_onnx=False, fp16=True)  # Windows路径，Linux环境无效
+# 使用 ModelScope 下载 CosyVoice 模型
+cosyvoice_model_id = "iic/CosyVoice-300M"
+cosyvoice_local_dir = snapshot_download(model_id=cosyvoice_model_id)
+cosyvoice = CosyVoice(cosyvoice_local_dir, load_jit=True, load_onnx=False, fp16=True)
 # --- CosyVoice - 支持的音色列表
 print(cosyvoice.list_avaliable_spks())
 # ------------------ 模型初始化结束 ----------------
