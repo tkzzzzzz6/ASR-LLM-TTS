@@ -1,4 +1,15 @@
 #!/usr/bin/env python3
+# 说明：
+# 本脚本从语音文件中提取“语音离散 token”（speech token）。
+# 输入通过 `dir/wav.scp` 提供 utterance→wav 路径映射；
+# 先做 16k 重采样与 Whisper 风格的 log-mel 提取，再调用提供的 ONNX 模型
+# 进行推理，生成每条语音的 token 列表；最终保存为 `dir/utt2speech_token.pt`。
+# 支持多线程并行处理与 CUDA Execution Provider。
+# 运行示例：
+#   python tools/extract_speech_token.py \
+#       --dir data/train \
+#       --onnx_path models/speech_token.onnx \
+#       --num_thread 8
 # Copyright (c) 2024 Alibaba Inc (authors: Xiang Lyu)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");

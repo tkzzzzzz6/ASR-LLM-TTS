@@ -1,4 +1,18 @@
 #!/usr/bin/env python3
+# 说明：
+# 本脚本用于批量提取语音与说话人嵌入（embedding）。
+# 从 `dir/wav.scp` 与 `dir/utt2spk` 读取样本与说话人映射，
+# 对每条语音计算 80 维 fbank 特征并做均值归一化，调用提供的 ONNX 模型
+# 推理得到 utterance 级 embedding；同时对同一说话人的多条 embedding 取均值，
+# 生成 `spk2embedding`。最终分别保存到：
+#   - `dir/utt2embedding.pt`
+#   - `dir/spk2embedding.pt`
+# 支持多线程，默认使用 CPU Execution Provider。
+# 运行示例：
+#   python tools/extract_embedding.py \
+#       --dir data/train \
+#       --onnx_path models/embedding.onnx \
+#       --num_thread 8
 # Copyright (c) 2024 Alibaba Inc (authors: Xiang Lyu)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");

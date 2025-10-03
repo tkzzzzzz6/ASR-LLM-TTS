@@ -1,4 +1,18 @@
 #!/usr/bin/env python3
+# 说明：
+# 本脚本用于将准备好的语音数据清单（wav.scp、text、utt2spk）以及
+# 预先提取的特征文件（utt2embedding.pt、spk2embedding.pt、utt2speech_token.pt）
+# 按照固定条数切分，批量打包为 Parquet 文件，便于后续高效加载与训练/推理。
+# 同时会生成映射清单：
+#  - data.list：所有 parquet 文件路径列表
+#  - utt2data.list：每个切分产生的 utt→parquet 映射文件列表
+#  - spk2data.list：每个切分产生的 spk→parquet 映射文件列表
+# 运行示例：
+#   python tools/make_parquet_list.py \
+#       --num_utts_per_parquet 1000 \
+#       --num_processes 4 \
+#       --src_dir data/train \
+#       --des_dir data/parquets
 # Copyright (c) 2024 Alibaba Inc (authors: Xiang Lyu)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");

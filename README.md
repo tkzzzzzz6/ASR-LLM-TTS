@@ -1,5 +1,9 @@
 # 环境配置详细教程 [B站](https://www.bilibili.com/video/BV1HucueQEJo/)
 
+> 文档导航：
+> - 使用指南：见 `docs/UsageGuide.zh-CN.md`
+> - 改进方案：见 `docs/ImprovementPlan.md`
+
 0. anaconda\ffmpeg安装
 ```
     网上很多教程，自行搜索
